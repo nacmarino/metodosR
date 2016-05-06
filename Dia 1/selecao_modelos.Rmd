@@ -219,14 +219,146 @@ summary(modelo_nulo)$coef
 mean(log10(ilhas$riqueza))
 ```
 
+## Observação  
+
+* Usar a função `glm` com a distribuição `family = gaussian` e a função de relação com a média `link = "identity"` gera o mesmo resultado da função `lm`.  
+
+```{r}
+ex1 <- lm(log10(riqueza) ~ 1, data = ilhas)
+summary(ex1)$coef
+ex2 <- glm(log10(riqueza) ~ 1, data = ilhas, family = gaussian(link = "identity"))
+summary(ex2)$coef
+```
+
 ## Passo 5 | Criar um modelo  
+
+Vamos criar um modelo, relacionando o logaritmo da riqueza de espécies com o da área da ilha.  
+```{r}
+modelo1 <- glm(log10(riqueza) ~ log10(area), data = ilhas)
+summary(modelo1)
+```
 
 ## Passo 6 | Comparar com o modelo nulo  
 
+**Opção 1**: função `anova` + outras funções.
+
+```{r}
+anova(modelo_nulo, modelo1, test = "F")
+AIC(modelo_nulo, modelo1) # BIC(modelo_nulo, modelo1)
+```
+
+## Passo 6 | Comparar com o modelo nulo  
+
+**Opção 2**: função `AICcmodavg::aictab`.
+```{r warning=FALSE, message=FALSE}
+library(AICcmodavg)
+modelos <- list(modelo_nulo, modelo1)
+aictab(cand.set = modelos, modnames = c("nulo", "com area"))
+```
+
+## Passo 6 | Comparar com o modelo nulo  
+
+**Opção 3**: função `MuMin::model.sel`.
+```{r warning=FALSE, message=FALSE}
+library(MuMIn)
+model.sel(modelo_nulo, modelo1)
+```
+
+## Até agora...  
+
+* Podemos concluir que o modelo com a adição de um termo para a área ($\beta$~1~) melhora o ajuste do modelo aos dados;  
+* Mas lembrando da análise exploratória de dados, rolava alguma coisa com...  
+    + Tipo de ilha: costeira vs oceanica
+    + Tamanho do arquipelago: pequeno vs medio vs grande  
+    + Montanha: presença vs ausência
+    + Produtividade  
+    + Diversidade de Habitats e outros
+* Vamos criar modelos incluindo estas variáveis.
+
 ## Passo 7 | Adicionar/remover variáveis do modelo  
+
+* Antes de fazer o trabalho criativo da criação de modelos, vamos abordar um exemplo com a inclusão de uma variável categórica no modelo.  
+```{r}
+modelo2 <- glm(log10(riqueza) ~ arquipelago, data = ilhas)
+summary(modelo2)
+```
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+* Onde está os dados referente ao arquipélago grande?  
+* Que valores de significância são esses?   
+
+```{r echo=FALSE}
+knitr::kable(summary(modelo2)$coef, format = "html", digits = c(3, 3, 3, 4), align = "c")
+```
+
+## Passo 7 | Adicionar/remover variáveis do modelo 
+
+Como o R trabalha com os seus fatores?  
+
+```{r}
+head(model.matrix(~ilhas$arquipelago))
+```
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+* Por padrão, sempre que existir uma variável categórica no modelo, o R vai usar um dos níveis para ser o valor de $\beta$~0~ (o intercepto), e o valor dos parâmetros dos demais níveis serão estimados relativo ao $\beta$~0~.  
+  
+* Por padrão, o R seleciona o nível cujo nome vier primeiro no alfabeto.  
+  
+* Uma forma de ver esse modelo:
+
+<center>_y_ = $\beta$~grande~ + $\beta$~médio~ * X~log(S)~ + $\beta$~pequeno~ * X~log(S)~</center>
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+* Você pode remover o intercepto do modelo.
+```{r eval=FALSE}
+ex3 <- glm(log10(riqueza) ~ 0 + arquipelago, data = ilhas)
+summary(ex3)
+```
+
+```{r echo=FALSE}
+ex3 <- glm(log10(riqueza) ~ 0 + arquipelago, data = ilhas)
+knitr::kable(summary(ex3)$coef, format = "html", digits = c(3, 3, 3, 4), align = "c")
+```
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+* Ou selecionar que nível o R vai usar como intercepto.  
+```{r eval=FALSE}
+ex4 <- glm(log10(riqueza) ~ I(1 * (arquipelago == "grande")) +
+                 I(1 * (arquipelago == "medio")), data = ilhas)
+summary(ex4)
+```
+
+```{r echo=FALSE}
+ex4 <- glm(log10(riqueza) ~ I(1 * (arquipelago == "grande")) +
+                 I(1 * (arquipelago == "medio")), data = ilhas)
+knitr::kable(summary(ex4)$coef, format = "html", digits = c(3, 3, 3, 4), align = "c")
+```
+
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+Que outra forma tem de mexer nisso aqui? (contrasts(ilhas$arquipelago))  
+
+## Observações  
+
+Remover ou não o intercepto?
+O que significa o estimate com ou sem o intercepto?
+Você deve usar essas diferenças como estimativa de significância?
 
 ## Passo 8 | Comparar novo(s) modelo(s) com o modelo nulo  
 
-## Passo 9 | Comparar com o modelo nulo  
+Criar n modelos;
+Usar funções para determinar o mais provável;
+Falar do dredge
 
-## Passo 10 | Comparar com o modelo nulo  
+## Passo 9 | Determinar o modelo mais provável  
+
+Fechar com o modelo final
+
+## Considerações finais
+
+Resumir aula
