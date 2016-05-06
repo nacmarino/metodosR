@@ -102,4 +102,4 @@ ilhas <- select(ilhas, ID, ilha, arquipelago, riqueza, area, produtividade, popu
   arrange(ID)
 
 # salvando arquivo criado para a aula
-write.table(x = ilhas, file = "dados/ilhas.txt", row.names = FALSE, sep = "\t")
+write.table(x = ilhas, file = "Dia 1/dados/ilhas.txt", row.names = FALSE, sep = "\t")
