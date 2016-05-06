@@ -1,0 +1,18 @@
+---
+title       : "Seleção de Modelos"
+subtitle    : "Análise de dados com modelos lineares em R"
+author      : "Nicholas A. C. Marino"
+job         : "Universidade Federal do Rio de Janeiro"
+date        : "github.com/nacmarino/metodosR"
+output:
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
+---
+
+## Seleção de Modelos  
+
+* É o processo pelo qual vamos determinar qual é o modelo que melhor se adequa ao conjunto de dados que possuímos.  
+* Princípio da parcimônia - menos é mais.  
+
+<img src="figures/phd101209s.gif" height="350px"></img>
