@@ -15,4 +15,218 @@ output:
 * É o processo pelo qual vamos determinar qual é o modelo que melhor se adequa ao conjunto de dados que possuímos.  
 * Princípio da parcimônia - menos é mais.  
 
-<img src="figures/phd101209s.gif" height="350px"></img>
+<center><img src="figures/phd101209s.gif" height="350px"></img></center>  
+
+## Antes de começar  
+
+Alguns pacotes úteis.
+
+```{r eval=FALSE}
+install.packages("fitdistrplus") # funções para avaliar e descrever distribuição dos dados
+install.packages("AICcmodavg") # uma opção para seleção de modelos
+install.packages("MuMin") # outra opção para seleção de modelos
+install.packages("car") # conjunto de funções úteis para regressão
+install.packages("lmerTest") # funções especialmente úteis para lmer
+install.packages("lsmeans") # funções para pós-teste
+install.packages("multcomp") # outra opção para pós-teste
+install.packages("broom") # funcionalidades para trabalhar com os resultados
+install.packages("visreg") # para visualizar o resultado dos seus modelos
+```
+
+## Antes de começar  
+
+Vamos carregar um conjunto de dados para trabalharmos.
+
+```{r}
+ilhas <- read.table(file = "dados/ilhas.txt", header = TRUE)
+```
+
+```{r}
+str(ilhas)
+```
+
+## Passo 1 | Saber o que queremos fazer
+
+* A relação espécie-área (Arrhenius, 1921, J Ecol 9: 95-99) é uma das relações mais conhecidas e exploradas da ecologia;  
+  
+* O estudo de Biogeografia de Ilhas, por MacArthur & Wilson (1967), foi uma grande contribuição para entendermos a dinâmica ecológica nestes habitats;  
+  
+* Podemos usar essas informações como um ponto de partida para direcionar nossas análises:  
+  
+      1. A riqueza de espécies em uma ilha aumenta como a sua área (log-log).    
+      2. A riqueza de espécies em uma ilha aumenta com a quantidade de energia disponível.  
+      3. A riqueza de espécies em uma ilha aumenta com a diversidade de habitats.  
+      4. Ilhas oceânicas possuem menor riqueza de espécies do que ilhas costeiras de mesmo tamanho.
+      5. Ilhas em arquipelagos maiores devem ter mais espécies que em arquipelagos menores.  
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+* Etapa conhecida como análise exploratória de dados.  
+* Um jeito rápido (e "sujo") de fazer isso é com a função `pairs`;    
+* Mas também podemos usar o `ggplot2`!  
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+```{r fig.align='center', fig.width=4, fig.height=4}
+library(ggplot2)
+qplot(x = area, y = riqueza, data = ilhas, log = "xy", xlab = "Área da Ilha (log)",
+      ylab = "Riqueza de Espécies (log)")
+```
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+Quando estamos explorando graficamente os dados é importante plotarmos a maior quantidade de informações possíveis em uma mesma figura, para nos ajudar a:  
+  
+      - Visualizar o tipo de relação existente entre as variáveis (positiva, negativa,...)  
+      
+      - Visualizar a forma da relação entre as variáveis (linear, unimodal,...)  
+      
+      - Saber que podemos testar de fato ("temos todos os níveis em todas as categorias?")  
+      
+      - Determinar se existe algum tipo de interação que deve ser considerada  
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+```{r fig.align='center', fig.width=8, fig.height=4}
+qplot(x = area, y = riqueza, data = ilhas, log = "xy", facets = ~ arquipelago,
+      xlab = "Área da Ilha (log)", ylab = "Riqueza de Espécies (log)")
+```
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+```{r fig.align='center', fig.width=8, fig.height=4}
+qplot(x = area, y = riqueza, data = ilhas, log = "xy", facets = ~ arquipelago,
+      colour = ilha, xlab = "Área da Ilha (log)", ylab = "Riqueza de Espécies (log)")
+```
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+```{r fig.align='center', fig.width=8, fig.height=4}
+qplot(x = area, y = riqueza, data = ilhas, log = "xy", facets = ~ arquipelago,
+      colour = ilha, size = log10(produtividade), xlab = "Área da Ilha (log)", 
+      ylab = "Riqueza de Espécies (log)")
+```
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+```{r fig.align='center', fig.width=8, fig.height=4}
+qplot(x = area, y = riqueza, data = ilhas, log = "xy", facets = ~ arquipelago,
+      colour = ilha, size = log10(produtividade), xlab = "Área da Ilha (log)", 
+      shape = montanha, ylab = "Riqueza de Espécies (log)")
+```
+
+## Passo 2 | Visualizar os dados e relação entre eles
+
+* Conclusões da análise exploratório dos gráficos:  
+    + Parece que todos os dados estão OK e não tem nenhum outlier;  
+    + A relação log-log entre riqueza e área parece se adequar melhor;  
+    + Tem várias coisas rolando: produtividade, tipo de ilha, tamanho do arquipelago...
+    + Devemos capturar essas características com os nossos modelos.
+
+## Passo 3 | Descobrir a distibuição da variável resposta  
+
+**Opção 1**: Teste de Shapiro-Wilk.
+
+```{r}
+shapiro.test(ilhas$riqueza);shapiro.test(log10(ilhas$riqueza))
+```
+
+## Passo 3 | Descobrir a distibuição da variável resposta  
+
+**Opção 2**: histograma.
+
+```{r eval=FALSE}
+qplot(x = riqueza, data = ilhas, geom = "histogram", xlab = "Riqueza de Espécies", ylab = "Observações")
+qplot(x = log10(riqueza), data = ilhas, geom = "histogram", xlab = "Riqueza de Espécies (log10)")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.height=3, fig.width=5}
+library(gridExtra)
+grid.arrange(qplot(x = riqueza, data = ilhas, geom = "histogram", xlab = "Riqueza de Espécies", ylab = "Observações"), qplot(x = log10(riqueza), data = ilhas, geom = "histogram", xlab = "Riqueza de Espécies (log10)", ylab = ""), nrow = 1)
+```
+
+## Passo 3 | Descobrir a distibuição da variável resposta  
+
+**Opção 3**: Q-Q Plot.
+
+```{r fig.align='center', fig.height=4, fig.width=6}
+par(mfrow = c(1,2))
+qqnorm(ilhas$riqueza);qqline(ilhas$riqueza)
+qqnorm(log10(ilhas$riqueza));qqline(log10(ilhas$riqueza))
+```
+
+## Passo 3 | Descobrir a distibuição da variável resposta  
+
+**Opção 4**: Gráfico de Cullen e Frey.
+```{r fig.align='center', fig.height=4, fig.width=6, warning=FALSE, message=FALSE}
+library(fitdistrplus)
+descdist(ilhas$riqueza, boot = 1000)
+```
+
+## Passo 3 | Descobrir a distibuição da variável resposta  
+
+**Opção 4**: Gráfico de Cullen e Frey.
+```{r fig.align='center', fig.height=4, fig.width=6, warning=FALSE, message=FALSE}
+descdist(log10(ilhas$riqueza), boot = 1000)
+```
+
+## Observação  
+
+O que é _kurtosis_ e _skewness_?
+
+<center><img src="figures/kurtosis.png" height="260px"></img></center>  
+
+## Passo 4 | Estabelecer um modelo nulo  
+
+* O que é um modelo nulo?
+    + Também conhecido como modelo reduzido.  
+    + É o modelo base, que diz que não existe nenhuma relação entre sua variável resposta e as preditoras;  
+    + Este modelo normalmente contém somente o intercepto (_y_ = $\beta$~0~);  
+    + Ele também pode conter características especiais do seu desenho (fator aleatório, medidas repetidas)...  
+    
+## Passo 4 | Estabelecer um modelo nulo  
+
+```{r}
+modelo_nulo <- glm(log10(riqueza) ~ 1, data = ilhas, family = gaussian(link = "identity"))
+summary(modelo_nulo)
+```
+
+## Passo 4 | Estabelecer um modelo nulo  
+
+* Mas...o que é o intercepto?  
+* Rode isso no seu console:
+
+```{r eval=FALSE}
+medify <- function(mu, x){
+  hist(x, col="red", breaks = 10, main = "Histograma Exploratório",
+       xlab = "Riqueza de Espécies (log)")
+  lines(c(mu, mu), c(0, 25), col="black", lwd=5)
+  mse <- mean((x - mu)^2)
+  text(0.8, 20, paste("mu = ", mu))
+  text(0.8, 18, paste("MSE = ", round(mse, 2)))
+}
+
+library(manipulate)
+manipulate(medify(mu, log10(ilhas$riqueza)), mu = slider(0, 2, step = 0.05));rug(log10(ilhas$riqueza))
+```
+
+## Passo 4 | Estabelecer um modelo nulo  
+
+* Então, um modelo somente com intercepto seria simplesmente o valor _médio_ daquela variável resposta.    
+
+```{r}
+summary(modelo_nulo)$coef
+mean(log10(ilhas$riqueza))
+```
+
+## Passo 5 | Criar um modelo  
+
+## Passo 6 | Comparar com o modelo nulo  
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+## Passo 8 | Comparar novo(s) modelo(s) com o modelo nulo  
+
+## Passo 9 | Comparar com o modelo nulo  
+
+## Passo 10 | Comparar com o modelo nulo  
