@@ -1,0 +1,13 @@
+---
+title       : "Validação de Modelos"
+subtitle    : "Análise de dados com modelos lineares em R"
+author      : "Nicholas A. C. Marino"
+job         : "Universidade Federal do Rio de Janeiro"
+date        : "github.com/nacmarino/metodosR"
+output:
+  html_document:
+    widescreen: true
+    smaller: true
+---
+
+## Modelos lineares
