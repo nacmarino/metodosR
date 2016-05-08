@@ -5,7 +5,7 @@ author      : "Nicholas A. C. Marino"
 job         : "Universidade Federal do Rio de Janeiro"
 date        : "github.com/nacmarino/metodosR"
 output:
-  html_document:
+  ioslides_presentation:
     widescreen: true
     smaller: true
 ---
