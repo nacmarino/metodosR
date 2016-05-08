@@ -72,7 +72,7 @@ grid.arrange(ggplot(data.frame(x,y), aes(x = x, y = y)) + geom_point(colour = "b
     + com todas as variáveis de interesse de uma vez.  
 > 6. Comparar com o modelo nulo;  
 > 7. Adicionar/remover variáveis do modelo;  
-> 8. Comparar novo(s) modelo(s) com o modelo nulo;  
+> 8. Comparar os novo(s) modelo(s);  
 > 9. Determinar o modelo mais provável;
 > 10. Validar modelo final;
 > 11. Testar significância dos termos no modelo;  

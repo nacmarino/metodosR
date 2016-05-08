@@ -338,27 +338,139 @@ ex4 <- glm(log10(riqueza) ~ I(1 * (arquipelago == "grande")) +
 knitr::kable(summary(ex4)$coef, format = "html", digits = c(3, 3, 3, 4), align = "c")
 ```
 
-
 ## Passo 7 | Adicionar/remover variáveis do modelo  
 
-Que outra forma tem de mexer nisso aqui? (contrasts(ilhas$arquipelago))  
+* Você também pode alterar este padrão redefinindo os níveis dos contrastes no R.
+```{r}
+contrasts(ilhas$arquipelago)
+```
+
+```{r evan=FALSE}
+contrasts(ilhas$arquipelago) <- cbind(grande = c(1,0,0), medio = c(0,1,0))
+```
 
 ## Observações  
 
-Remover ou não o intercepto?
-O que significa o estimate com ou sem o intercepto?
-Você deve usar essas diferenças como estimativa de significância?
+* O que significa o estimate com ou sem o intercepto?
 
-## Passo 8 | Comparar novo(s) modelo(s) com o modelo nulo  
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+knitr::kable(ilhas %>% group_by(arquipelago) %>% summarise(media = mean(log10(riqueza))) %>% mutate(diferenca = c(0, diff(media))),
+             format = "html", align = "c")
+```
+  
+```{r}
+knitr::kable(summary(ex3)$coef[,1:2], format = "html", digits = c(3, 3, 3, 4), align = "c")
+knitr::kable(summary(modelo2)$coef[,1:2], format = "html", digits = c(3, 3, 3, 4), align = "c")
+```
 
-Criar n modelos;
-Usar funções para determinar o mais provável;
-Falar do dredge
+## Observações  
+
+* O que significa o estimate com ou sem o intercepto?
+    + Quando temos o intercepto, os valores dos coeficientes no `summary` são a diferença entre as médias o nível que representa o intercepto e o outro.  
+    + Quando removemos o intercepto, os valores dos coeficientes no `summary` são as médias de cada tratamento.  
+  
+* Remover ou não o intercepto?  
+    + A não ser que você possua alguma hipótese específica, a sugestão é sempre manter o intercepto do modelo como está.  
+  
+* Você deve usar essas diferenças como estimativa de significância?  
+    + Sim, se você tiver alguma hipótese específica cujo output do `summary` responda;  
+    + Não, se você possui múltiplas comparações entre níveis de variáveis ou quer fazer pós-testes mais complexos.  
+
+## Passo 7 | Adicionar/remover variáveis do modelo  
+
+De volta à criação de modelos.  
+```{r}
+modelo3 <- glm(log10(riqueza) ~ log10(area) * arquipelago, data = ilhas)
+modelo4 <- glm(log10(riqueza) ~ log10(area) + arquipelago, data = ilhas)
+modelo5 <- glm(log10(riqueza) ~ log10(area) * ilha, data = ilhas)
+modelo6 <- glm(log10(riqueza) ~ log10(area) + ilha, data = ilhas)
+modelo7 <- glm(log10(riqueza) ~ log10(area) + ilha + arquipelago, data = ilhas)
+modelo8 <- glm(log10(riqueza) ~ log10(area) + ilha + arquipelago + log10(produtividade), data = ilhas)
+modelo9 <- glm(log10(riqueza) ~ log10(area) + ilha + arquipelago + temperatura, data = ilhas)
+```
+
+## Passo 8 | Comparar os novo(s) modelo(s)  
+
+* Vamos comparar os modelos criados com o `AICcmodavg::aictab`.  
+```{r eval=FALSE}
+modelos <- list(modelo_nulo, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9)
+mod_names <- c("nulo", "com area", "arquipelago", "area*arq", "area+arq", "area*ilha", "area+ilha", 
+               "area+ilha+arq", "area+ilha+arq+produt", "area+ilha+arq+temp")
+aictab(modelos, mod_names)
+```
+
+```{r echo=FALSE}
+modelos <- list(modelo_nulo, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9)
+mod_names <- c("nulo", "com area", "arquipelago", "area*arq", "area+arq", "area*ilha", "area+ilha", 
+               "area+ilha+arq", "area+ilha+arq+produt", "area+ilha+arq+temp")
+knitr::kable(aictab(modelos, mod_names), format = "html", align = "c", digits = 2)
+```
+
+## Passo 8 | Comparar os novo(s) modelo(s)  
+
+* Também podemos comparar os modelos criados com o `MuMIn::model.sel`.  
+
+```{r eval=FALSE}
+model.sel(modelo_nulo, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9)
+```
+
+```{r echo=FALSE}
+knitr::kable(data.frame(model.sel(modelo_nulo, modelo1, modelo2, modelo3, modelo4, 
+                       modelo5, modelo6, modelo7, modelo8, modelo9))[,-c(1:8)], digits = 2, format = "html")
+```
 
 ## Passo 9 | Determinar o modelo mais provável  
 
-Fechar com o modelo final
+* Por vezes, você pode ter modelos cujo suporte sejam muito similares e você precisa decidir entre um deles.  
+* Existem várias formas de você fazer isso, mas, no contexto do que estamos trabalhando, podemos continuar utilizando as ferramentas da seleção de modelos para chegarmos ao modelo mais provável.  
+* A função `stats::drop1` te mostra o quanto mudaria o valor de AIC caso você deletasse cada um dos termos no modelo.  
+
+## Passo 9 | Determinar o modelo mais provável  
+
+Por exemplo, rode cada uma dessas linhas e veja que sempre que a área e o tipo de ilha, além do tamanho do arquipélago, são deletados do modelo, o valor de AIC aumenta, ao invés de cair.  
+
+```{r eval=FALSE}
+drop1(modelo7)
+drop1(modelo9)
+drop1(modelo8)
+```
+
+## Passo 9 | Determinar o modelo mais provável  
+
+* A seleção de modelos, e o nosso julgamento, sugerem que os modelos com a área da ilha (log10), o tipo de ilha (costeira vs oceanica) e o tamanho do arquipelago (pequeno vs medio vs grande) são variáveis muito importantes para descrever a riqueza de espécies (log10) neste conjunto de dados.  
+    + Os melhores modelos contém estas variáveis ou combinações delas;  
+    + A remoção de qualquer uma destas variáveis tem um impacto muito maior nos valores de AIC (e demais métricas) do que a remoção das outras variáveis;  
+    + Por parcimônia, devemos escolher o modelo mais simples.  
+* O modelo 7 tem bastante suporte para ser o modelo de trabalho.  
 
 ## Considerações finais
 
-Resumir aula
+* Ao invés de construir modelos a partir do zero, você também pode criar um modelo completo e usar algumas funções para tentar "enxugar" ele.
+* A função `MuMIn::dredge` pode fazer isso, além da função `stats::step` (para `lm` e `glm`).  
+
+```{r}
+modelo_completo <- glm(log10(riqueza) ~ log10(area) + ilha + arquipelago + temperatura + precipitacao +
+                         log10(produtividade) + habitat + montanha + populacao, data = ilhas)
+```
+
+```{r eval=FALSE}
+step(modelo_completo)
+dredge(modelo_completo) # você deve usar <options(na.action = "na.fail")> antes de rodar essa função
+```
+
+## Considerações finais  
+
+* No entanto, essa não é uma boa prática para a análise de dados:
+    + Parece que você está tentando "pescar" um resultado.    
+    + Você **tem** uma hipótese de trabalho.  
+    + Modelos construídos desta maneira podem não fazer sentido. 
+    + Complexidade destes modelos pode (e possivelmente) ser alta demais.  
+    + Modelos selecionados podem ser modelos "problemáticos" (vamos ver isso nas próximas aulas).  
+
+## Considerações finais  
+
+1. Tenha sempre em mente a hipótese que você quer responder;  
+2. Tente entender seus dados antes de você começar a analisá-los;  
+3. A seleção de modelos pode ser uma ferramenta muito útil para separar o joio do trigo;  
+4. Tenha em mente que a seleção de modelos por si só não te indica qual modelo é o mais adequado - você precisa saber se o modelo selecionado é válido também (tema da próxima aula).
