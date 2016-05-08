@@ -10,4 +10,260 @@ output:
     smaller: true
 ---
 
-## Modelos lineares
+## Recapitulando    
+
+* Nós estamos trabalhando com o conjunto de dados `ilhas`;  
+  
+* A seleção de modelos sugere que a riqueza de espécies (log10) é bem descrita pela variáveis:  
+    + área da ilha - contínua, log10
+    + tipo de ilha - categórica, 2 níveis (oceanica vs costeira)
+    + tamanho do arquipelago - categórica, 3 níveis (pequeno vs médio vs grande)  
+  
+* Outra variáveis podem contribuir, mas aparentemente são menos importantes.  
+
+## Carregando dados    
+
+```{r}
+ilhas <- read.table("../model_selection/dados/ilhas.txt", header = TRUE)
+str(ilhas)
+```
+
+## Recriando o modelo selecionado  
+
+```{r}
+modelo1 <- glm(log10(riqueza) ~ log10(area) + ilha + arquipelago, data = ilhas)
+modelo1
+```
+
+## Diagnóstico do Modelo
+
+### O que queremos com um modelo é que os valores __ajustados__ batam de forma precisa com os valores __observados__ da variável resposta, de forma que possamos __predizer__ os valores da nossa variável resposta de acordo com novos valores das variáveis preditoras.  
+
+## Diagnóstico do Modelo
+
+### Essa ideia é a base para a validação e o dignóstico de modelos: processo para verificar a adequação do modelo aos dados, além da conformidade com pressupostos estatísticos e identificação de observações tendenciosas.  
+
+## Validação de Modelos | Um exemplo
+
+* Faça download deste conjunto de dados e rode as linhas de comando.  
+
+```{r fig.align='center', fig.width=4, fig.height=4}
+# http://www4.stat.ncsu.edu/~stefanski/NSF_Supported/
+# Hidden_Images/orly_owl_files/orly_owl_Lin_4p_5_flat.txt
+owl <- read.table("http://www4.stat.ncsu.edu/~stefanski/NSF_Supported/Hidden_Images/orly_owl_files/orly_owl_Lin_4p_5_flat.txt", header = FALSE)
+fit <- lm(V1 ~ . - 1, data = owl); plot(predict(fit), resid(fit), pch = '.')
+```
+
+## Validação de Modelos | O que buscamos?  
+
+* Os valores __ajustados__ pelo modelo batem com os valores __observados__?  
+  
+* Os resíduos da análise seguem a __distribuição normal__?  
+    + Erros para mais "anulam" erros para menos  
+    + Pode ser mais importante do que a normalidade da própria variável resposta  
+    + Não deve existir relação entre a distribuição dos resíduos e a variável __ajustada__
+  
+* Os resíduos da análise possuem variância homogênea (_homocedasticidade_ vs _heterocedasticidade_)?
+    + Entre grupos de uma variável categórica  
+    + Ao longo do gradiente de uma variável contínua  
+        
+## Validação de Modelos | O que buscamos?  
+
+* As variáveis preditoras são independentes umas das outras (não existe _colinearidade_)? 
+  
+* O modelo está livre de observações que "puxam" os seus resultados (_leverage_)?  
+  
+* As observações são independentes?
+    + Uma observação por unidade experimentail e/ou indivíduo  
+    + No espaço
+    + No tempo
+  
+## Valores Ajustados vs Observados
+
+* Uma das primeiras coisas a se fazer é verificar se existe boa relação entre valores __ajustados__ e os __observados__.  
+* __O que você busca?__: uma relação muito próxima de 1:1.  
+
+```{r fig.align='center', fig.width=4, fig.height=4}
+plot(fitted(modelo1) ~ modelo1$model$`log10(riqueza)`, xlab = "Valores Observados", ylab = "Valores Ajustados")
+abline(a = 0, b = 1)
+```
+
+## Valores Ajustados vs Observados | E se a relação não for boa?
+
+* Considere outro tipo de distribuição para o seu modelo;  
+* Considere algum tipo de transformação da sua variável resposta;  
+* Considere incluir mais alguma variável __preditora__ na sua análise;  
+* Plotar os resíduos do seu modelo com outras variáveis preditoras não testadas é uma boa ideia.  
+
+```{r echo=FALSE,fig.align='center', fig.width=6, fig.height=3.5}
+par(mfrow = c(1,2))
+plot(resid(modelo1) ~ populacao, data = ilhas)
+plot(resid(modelo1) ~ temperatura, data = ilhas)
+```
+
+## Variação Residual
+
+* O ruído da relação é conhecida como o _resíduo_: variação na variável resposta que não é explicada pela(s) variável(is) preditora(s).
+* __O que você busca?__: uma distribuição dos resíduos próxima a da distribuição normal.
+
+```{r fig.align='center', fig.width=4, fig.height=4}
+residuos <- resid(modelo1)
+hist(residuos);rug(residuos)
+```
+
+## Variação Residual | Normalidade dos Resíduos
+
+**Opção 1:** teste estatístico.
+```{r}
+residuos <- resid(modelo1)
+shapiro.test(residuos)
+```
+
+## Variação Residual | Normalidade dos Resíduos
+
+**Opção 2:** visualização gráfica.
+```{r fig.align='center', fig.width=4, fig.height=4}
+qqnorm(residuos);qqline(residuos)
+```
+
+## Variação Residual | Variância dos Resíduos
+
+**Opção 1:** teste estatístico.
+```{r}
+bartlett.test(x = residuos, g = ilhas$ilha)
+bartlett.test(x = residuos, g = ilhas$arquipelago)
+```
+
+## Variação Residual | Variância dos Resíduos
+
+**Opção 2:** visualização gráfica.
+```{r fig.align='center', fig.width=8, fig.height=3}
+par(mfrow = c(1,3))
+plot(residuos ~ log10(riqueza), data = ilhas, ylab = "Resíduos", xlab = "log10(riqueza)")
+plot(residuos ~ ilha, data = ilhas, ylab = "", xlab = "Tipo de Ilha")
+plot(residuos ~ arquipelago, data = ilhas, ylab = "", xlab = "Tamanho do Arquipélago")
+```
+
+## Variação Residual | Relação com os valores ajustados  
+
+* __O que você busca?__: os resíduos devem estar espalhados de forma relativamente homogênea com os valores __ajustados__.  
+
+```{r fig.align='center', fig.width=4, fig.height=4}
+plot(residuos ~ fitted(modelo1), xlab = "Valores ajustados", ylab = "Resíduos")
+```
+
+## Variação Residual
+
+* Sempre temos a opção do teste estatístico e da visualização gráfica.  
+* __Minha recomendação__: use a visualização gráfica.  
+    + Os testes estatísticos são influenciados pelo tamanho da amostra;  
+    + Os testes estatísticos são influenciados por outliers;  
+    + Estes testes estatísticos são sensíveis à desvios na normalidade.  
+
+## Variação Residual | E se os resíduos não estiverem conforme?
+
+* Considere outro tipo de distribuição para o seu modelo;  
+* Use modelos onde estes pressupostos sejam mais flexíveis (`nlme::gls`);    
+* Plote os resíduos contra as variáveis preditoras usadas, para saber se é alguma mau ajuste à alguma delas.
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3.5}
+par(mfrow = c(1,3))
+plot(residuos ~ log10(area), data = ilhas, ylab = "Resíduos")
+plot(residuos ~ arquipelago, data = ilhas, ylab = "Resíduos")
+plot(residuos ~ ilha, data = ilhas, ylab = "Resíduos")
+```
+
+## Independência entre variáveis preditoras  
+
+* Algumas das nossas variáveis preditoras podem ter uma forte relação uma com a outra: _colinearidade_;  
+* Por vezes, o efeito de uma das variáveis preditoras pode ocorrer através de uma relação indireta com outra variável preditora;  
+* A inclusão de variáveis correlacionadas pode:  
+    + Reduzir o ajuste do modelo aos dados; e,  
+    + Inflar a estimativa de variância dos termos - consequência: o do termo efeito na variável resposta some.  
+
+## Independência entre variáveis preditoras  
+
+* Produtividade e área afetam a riqueza de espécies, mas existe forte colinearidade entre estas variáveis.  
+
+```{r fig.align='center', fig.width=8, fig.height=3.5}
+par(mfrow = c(1,3))
+plot(log10(riqueza) ~ log10(area), data = ilhas)
+plot(log10(riqueza) ~ log10(produtividade), data = ilhas)
+plot(log10(produtividade) ~ log10(area), data = ilhas)
+```
+
+## Independência entre variáveis preditoras  
+
+* A colinearidade é especialmente problemática no contexto de análises multivariadades;
+* Além do diagnóstico visual, existe uma métrica para estimar da inflação da variância dos termos do modelo.  
+* O VIF (Variance Inflation Factor) estima o quanto a variância de um termo é aumentada por conta de colinearidade.
+* Você pode calcula o VIF na mão, ou usar a função `car::vif`.  
+
+## Independência entre variáveis preditoras  
+
+* __O que você busca?__: os valores de VIF devem ser o mais próximo possível de 1.
+```{r warning=FALSE, message=FALSE}
+modelo2 <- glm(log10(riqueza) ~ log10(area) + ilha + arquipelago + log10(produtividade), data = ilhas)
+library(car)
+vif(modelo2)
+vif(modelo1)
+```
+
+## Independência entre variáveis preditoras | E se houver colinearidade?  
+
+* Você pode:  
+  
+    1. Excluir a variável resposta que menos contribuir para o modelo.  
+    2. Transformar as variáveis colineares em uma única variável:  
+        + PCA;  
+        + k-Means Clustering.  
+
+## Influência das observações
+
+* Algumas das suas observações podem ter um peso desproporcional no modelo;  
+* Existe uma série de métricas disponíveis para avaliar e detectar a influência das observações;
+* A função `stats::influence.measures` apresenta várias métricas, dentre as quais se destacam:
+    + `cooks.distance` (`car` e `stats`): mede o efeito da remoção de uma determinada observação sobre os coeficientes (__influence__)
+    + `stats::hatvalues`: mede o quanto cada observação contribui para o ajuste do modelo (__leverage__)
+* O pacote `car` também possui outras funções que ajudam a calcular e visualizar as medidas de influência (por exemplo, `influencePlot`).
+
+## Influência das observações
+
+```{r fig.align='center', fig.width=6, fig.height=4}
+par(mfrow = c(1,2))
+plot(residuos ~ hatvalues(modelo1), xlab = "Hatvalues", ylab = "Resíduos")
+abline(a = 0, b = 0)
+influencePlot(modelo1)
+```
+
+## Influência das observações | E se houver a influência de alguma observação?  
+  
+* Remover observações simplesmente para melhorar o ajuste do modelo aos dados não é boa prática, a não ser que você tenha uma boa justificativa para tal.  
+  
+* A remoção da(s) observação(ões) de maior influência é menos problemática quando:  
+    + observação for um outlier;  
+    + observação está puxando muito a relação estabelecida pelo modelo.  
+  
+* Qualquer remoção de várias como estas deve ser reportada de forma clara na análise de dados do seu trabalho.  
+  
+## Independência entre observações  
+
+* Suas observações precisam ser independentes;  
+  
+* Por exemplo: ao tirar o tempo de um corredor em uma corrida, para determinar sua posição, o ideal é:  
+      - Ter vários tempos referentes à mesma volta?  
+      - Ter vários tempos referentes à diferentes voltas?  
+  
+* Pode acontecer de aparecer uma dependência temporal e/ou espacial no seu modelo, sem que isso tenha sido contemplado pelo seu desenho amostral - existe solução para isso também.  
+
+* Existem modelos lineares específicos para observações não independentes (veremos isso mais à frente).  
+
+## Considerações finais  
+
+* O melhor modelo não é somente aquele que se ajusta melhor aos seus dados, mas aquele que também consegui reproduzir os padrões apresentados pelos dados.  
+  
+* O diagnóstico e validação de modelos é parte mandatória da análise de dados.  
+  
+* Este processo deve ser conduzido ao mesmo tempo do processo de seleção de modelos: cada modelo criado deve ser diagnosticado e validade antes de ir para a seleção.  
+  
+* Para quase todos os problemas existe uma solução na análise de dados, mas ela não resolve problemas de desenho amostral/experimental.  
