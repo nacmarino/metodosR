@@ -171,3 +171,11 @@ theta
   
 * Mas a distribuição de Poisson pode ser útil!  
 
+## GLM | Distribuição de Poisson  
+
+* Em alguns casos, a distribuição ainda pode ser útil!
+
+```{r}
+modelo3 <- glm(mamiferos ~ log10(area) + ilha + arquipelago, data = ilhas, family = poisson())
+```
+
