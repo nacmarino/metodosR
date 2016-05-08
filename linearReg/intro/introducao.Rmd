@@ -41,6 +41,7 @@ grid.arrange(ggplot(data.frame(x,y), aes(x = x, y = y)) + geom_point(colour = "b
         - `stats::nls`, `stats:loess`   
         - `nlme::gnls`  
         - `gnm::gnm`  
+        - `gam::gam`  
         
 ## Modelos de Regressão em R  
 
