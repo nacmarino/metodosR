@@ -260,10 +260,12 @@ influencePlot(modelo1)
 
 ## Considerações finais  
 
+* Você pode conseguir os principais plots de diagnóstico e validação de modelos diretamente usando `plot(nome_do_modelo)`.   
+  
 * O melhor modelo não é somente aquele que se ajusta melhor aos seus dados, mas aquele que também consegui reproduzir os padrões apresentados pelos dados.  
   
 * O diagnóstico e validação de modelos é parte mandatória da análise de dados.  
   
-* Este processo deve ser conduzido ao mesmo tempo do processo de seleção de modelos: cada modelo criado deve ser diagnosticado e validade antes de ir para a seleção.  
+* Este processo deve ser conduzido ao mesmo tempo do processo de seleção de modelos: cada modelo criado deve ser diagnosticado e validado antes de ir para a seleção.  
   
 * Para quase todos os problemas existe uma solução na análise de dados, mas ela não resolve problemas de desenho amostral/experimental.  
