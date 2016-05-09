@@ -10,4 +10,108 @@ output:
     smaller: true
 ---
 
-## Modelos lineares
+## Modelos lineares mistos  
+  
+* Por vezes nosso desenho experimental incorpora elementos que devemos considerar nos modelos:
+    + Blocos espaciais e/ou temporais  
+    + Medidas repetidas nos mesmos indivíduos    
+    + Observações aninhadas dentro de grupos    
+    + Auto-correlação espacial ou temporal    
+    + Variância não homogênea entre grupos  
+    
+* Para tanto, utilizamos modelos mistos, que incoporam as variáveis preditoras fixas (do nosso interesse) e também as variáveis preditoras aleatórias (não são de nosso interesse) - por isso são chamado de _modelos mistos_.  
+
+## Modelos lineares mistos  
+
+* Podemos incorporar uma variável aleatória como um:
+    + Intercepto: os níveis do fator modificam os valores médios da variável resposta (ponto de partida da regressão difere, slopes podem ser semelhantes)  
+    + Slope: os níveis do fator modificam a relação da variável resposta com as variáveis preditoras (slopes podem variar de acordo com os níveis)  
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.width=3.5, fig.height=3.5}
+ilhas <- read.table(file = "../model_selection/dados/ilhas.txt", header = TRUE)
+library(ggplot2)
+ggplot(data = ilhas, mapping = aes(x = log10(area), y = log10(riqueza))) +
+  geom_smooth(aes(colour = arquipelago), method = "lm", se = FALSE, show.legend = FALSE, size = 3) +
+  geom_smooth(se = FALSE, show.legend = FALSE, size = 3, method = "lm", colour = "black", linetype = 2) +
+  theme_bw() +
+  xlab("") +
+  ylab("")
+```
+
+## Modelos lineares mistos | Intercepto 
+
+* Por exemplo, um modelo linear somente com várias fixas:  
+
+<center> _y_ = $\beta$~0~ + $\beta$~1~ * _x~1~_ + $\epsilon$ </center>
+
+* Adicionando uma variável aleatória, como um intercepto aleatório no modelo:  
+
+<center> _y_ = ($\beta$~0~ + **$\omega$~i~**) + $\beta$~1~ * _x~1~_ + ($\epsilon$ + **$\epsilon$~i~**) </center>
+
+## Modelos lineares mistos | Slope
+
+* Por exemplo, um modelo linear somente com várias fixas:  
+
+<center> _y_ = $\beta$~0~ + $\beta$~1~ * _x~1~_ + $\epsilon$ </center>
+
+* Adicionando uma variável aleatória, como um slope aleatório no modelo:  
+
+<center> _y_ = $\beta$~0~ + ($\beta$~1~ + **$\omega$~i~**) * _x~1~_ + ($\epsilon$ + **$\epsilon$~i~**) </center>
+
+## Modelos lineares mistos
+
+* Os parâmetros dos modelos lineares mistos são determinados através de dois métodos:  
+    + Maximum Likelihood (ML)  
+    + Restricted Maximum Likelihood (REML)  
+  
+* REML é o método padrão para o cálculo da estimativa dos parâmetros.  
+  
+* O REML é mais robusto do que o ML, pois corrige as estimativas dos parâmetros através da correção pelo número de graus de liberdade do modelo.  
+
+* Como consequência, normalmente utilizamos ML para fazer a seleção de modelos e o REML para validar o modelo e determinar a estimativa final dos parâmetros.  
+
+## Modelos lineares mistos
+
+* No R, modelos lineares mistos são implementados através dos pacotes `nlme` e `lme4`:
+    + `nlme::lme`: modelos lineares mistos, com boas funcionalidades para inclusão de estruturas de autocorrelação e de diferenças na variância entre grupos (`correlation` e `weights`)  
+    
+    + `lme4::lmer`: modelos lineares mistos (distribuição normal)  
+    
+    + `lme4::glmer`: modelos lineares generalizados mistos (**danger zone**), implementa a funcionalidade das GLMs nos modelos mistos - teoria ainda em desenvolvido (tende à instabilidade e pode ser temperamental)  
+  
+* Todas as boas práticas de seleção e validação de modelos que aprendemos para a `glm` valem para os modelos mistos.  
+
+## Modelos lineares mistos
+
+* Vamos implementar um modelo misto no conjunto de dados que estamos trabalhando.  
+  
+* Vamos utilizar o tipo de ilha como uma variável aleatória: a relação espécies-área é válida apenas para o subconjunto de dados que temos OU a relação é existente apesar da heterogeneidade entre tipos de ilhas?  
+  
+```{r warning=FALSE, message=FALSE}
+ilhas <- read.table(file = "../model_selection/dados/ilhas.txt", header = TRUE)
+library(lme4)
+modelo1 <- lmer(log10(riqueza) ~ log10(area) + arquipelago + (1|ilha), data = ilhas)
+```
+  
+* No `nlme`, usaríamos: `lme(log10(riqueza) ~ log10(area) + arquipelago, random = ~ 1|ilha, data = ilhas)`
+
+## Modelos lineares mistos
+
+```{r echo=FALSE}
+summary(modelo1)
+```
+
+## Modelos lineares mistos | Seleção de Modelos
+
+MuMIn:: r squared
+Funcionalidades do lmerTest
+
+## Modelos lineares mistos | Diagnóstico do Modelo
+
+## Modelos lineares mistos | Significância dos Termos no Modelo
+
+Não usar car::Anova
+
+## Modelos lineares mistos | Significância dos Termos no Modelo
+
+Usar lmerTest::anova
