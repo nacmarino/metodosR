@@ -10,4 +10,44 @@ output:
     smaller: true
 ---
 
-## Modelos lineares
+## Testes de Significância  
+
+* Na nossa cabeça, são a etapa principal da análise de dados.  
+
+## O que são os valores de p?  
+
+Demonstração
+
+## O valor de p | A ditadura dos testes de significância  
+
+Discussão sobre isso
+
+## Significância dos Termos  
+
+mostrando como faz com a função anova()
+
+## Significância dos Termos  
+
+sequência gera diferença dos termos e o que isso causa
+
+## Significância dos Termos | Soma dos Quadrados
+
+falando das diferentes SS e para que servem
+
+## Significância dos Termos | Soma dos Quadrados
+
+como implementar as diferentes SS no R?
+
+## Significância dos Termos | Soma dos Quadrados
+
+tipo 2 vs tipo 3: quando optar um ao outro.
+
+## Significância dos Termos | Overdispersion
+
+o que acontece quando isso rola
+
+## Pós-testes  
+
+apresentar uma forma de fazer  
+
+## Considerações finais  
