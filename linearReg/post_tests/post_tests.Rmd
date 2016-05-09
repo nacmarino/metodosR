@@ -43,27 +43,53 @@ modelo1 <- glm(log10(riqueza) ~ log10(area) * ilha + arquipelago, data = ilhas)
 Anova(modelo1, type = "III", test.statistic = "F")
 ```
 
-## Pós-testes  
+## Pós-testes | Tukey
 
 * Qual a diferença na riqueza de espécies de acordo com o tamanho do arquipélago?
 
 ```{r}
 (teste1 <- lsmeans(object = modelo1, "arquipelago"))
+```
+
+## Pós-testes | Tukey
+
+* Qual a diferença na riqueza de espécies de acordo com o tamanho do arquipélago?
+
+```{r}
 contrast(teste1, method = "pairwise") # Tukey; para não ajustar os valores de p: adjust = "none"
 ```
 
-## Pós-testes  
 
-* Qual a diferença na riqueza de espécies de acordo com o tipo de ilha?
+## Pós-testes | Contrastes
 
-```{r}
-(lsmeans(object = modelo1, pairwise ~ ilha))
-```
-
-## Pós-testes  
-
-* Qual a diferença na riqueza de espécies de acordo com a área e o tipo de ilha?
+* Qual a diferença na riqueza de espécies de acordo com o tamanho do arquipélago?
 
 ```{r}
-teste <- lstrends(modelo1, pairwise ~ ilha | area)
+contrast(teste1, 
+         list("G-MP"=c(2,-1,-1), "M-P"=c(0,-1,1)))
 ```
+
+## Pós-testes | Fatorial
+
+* Qual a diferença na riqueza de espécies de acordo com a interação entre o tamanho do arquipélago e o tipo de ilha?  
+
+```{r}
+modelo2 <- modelo1 <- glm(log10(riqueza) ~ log10(area) + ilha * arquipelago, data = ilhas)
+(teste2 <- lsmeans(object = modelo2, ~ arquipelago | ilha))
+```
+
+## Pós-testes | Fatorial
+
+* Qual a diferença na riqueza de espécies de acordo com a interação entre o tamanho do arquipélago e o tipo de ilha?  
+
+```{r}
+contrast(teste2, method = "pairwise")
+```
+
+## Considerações finais  
+  
+* Os pós-testes devem vir após a determinação do modelo final e da significância do termos no modelo.  
+  
+* No geral, a escolha do pós-teste deve estar de acordo com a sua hipótese de trabalho.  
+  
+* Contrastes podem ser mais poderosos do que teste múltiplos não-planejados.  
