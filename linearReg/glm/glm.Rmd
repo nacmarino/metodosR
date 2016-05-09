@@ -126,7 +126,7 @@ modelo1
     + Taxas: por exemplo, evento ocorre em 5 de cada 1000 observações...    
     + Proporções: por exemplo, 10 de cada 20 pessoas fazem...  
     + Contagens por unidade: por exemplo, 14 indivíduos por m²...  
-* Em ecologia: utilizado principalmente para modelar dados de abundância e/ou densidade.  
+* Em ecologia: utilizado para modelar dados de abundância e/ou densidade.  
 
 ```{r}
 modelo2 <- glm(riqueza ~ log10(area) + ilha + arquipelago, data = ilhas, family = poisson())
@@ -166,16 +166,55 @@ theta
   
     1. Dividir os valores da variável resposta pelo valor de theta;  
     2. Tentar outra função link;  
-    3. Tentar outra distribuição estatística;  
+    3. Tentar outra distribuição estatística - por exemplo, a família _quasi_;  
     4. Transformar o dado original e usar a distribuição normal.  
   
-* Mas a distribuição de Poisson pode ser útil!  
+* Mas não perca a esperança: a distribuição de Poisson pode ser útil!  
 
 ## GLM | Distribuição de Poisson  
 
-* Em alguns casos, a distribuição ainda pode ser útil!
+* Podemos utilizar a distribuição de Poisson para avaliar como o número de espécies de mamíferos varia em função das mesmas variáveis que havíamos analisado para a riqueza de espécies.  
+  
+* Existe pouca evidência de que existe __overdispersion__ nestes dados.  
 
 ```{r}
 modelo3 <- glm(mamiferos ~ log10(area) + ilha + arquipelago, data = ilhas, family = poisson())
+modelo3$deviance/modelo3$df.residual
 ```
 
+## GLM | Distribuição de Poisson  
+
+* Uma forma de visualizar rapidamente os resultados do seu modelo (as predições) é através da função `visreg::visreg`.  
+
+```{r warning=FALSE, message=FALSE, fig.align='center', fig.width=5, fig.height=3.5}
+library(visreg)
+visreg(modelo3)
+```
+
+## GLM | Distribuição Binomial  
+
+* Utilizada principalmente para modelar probabilidades:  
+    + Qual a probabilidade do evento **x** ocorrer?  
+    + Como um fenômeno **x** varia em função de **y**?  
+  
+* Sofre dos mesmo problemas da GLM com distribuição de Poisson.  
+
+## GLM | Distribuição Binomial  
+
+* Como a probabilidade de encontrarmos espécies de mamíferos muda com a área e tipo da ilha, e também do tamanho do arquipélago?
+
+```{r}
+modelo4 <- glm(cbind(riqueza, mamiferos) ~ log10(area) * ilha + arquipelago, data = ilhas, family = binomial())
+modelo4
+modelo4$deviance/modelo4$df.residual
+```
+
+## Considerações finais  
+
+* Os GLMs são uma poderosa ferramenta para analisar os seus dados.  
+
+* A escolha da família e link para o GLM deve ser baseada na natureza do dado que você possui.  
+  
+* O processo de criação, seleção e validação de modelo é o mesmo que o visto anteriormente.  
+  
+* É bastante importante ficar atento à possibilidade de __overdispersion__ no modelo, especialmente quando utilizar a distribuição de Poisson ou Binomial.  
