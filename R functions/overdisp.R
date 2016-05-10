@@ -1,4 +1,4 @@
-# function to calculate overdispersion, from <http://glmm.wikidot.com/faq>
+# function to calculate overdispersion, for GLMM - from <http://glmm.wikidot.com/faq>
 # you just have to enter the object corresponding to the model ("model") and the function returns the overdisperion factor
 
 overdisp_fun <- function(model) {
