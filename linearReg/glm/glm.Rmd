@@ -209,6 +209,16 @@ modelo4
 modelo4$deviance/modelo4$df.residual
 ```
 
+## GLM | r^2^
+
+```{r warning=FALSE, message=FALSE}
+library(MuMIn)
+r.squaredLR(modelo1)
+r.squaredLR(modelo2) # modelo com overdispersion
+r.squaredLR(modelo3)
+r.squaredLR(modelo4)
+```
+
 ## Considerações finais  
 
 * Os GLMs são uma poderosa ferramenta para analisar os seus dados.  

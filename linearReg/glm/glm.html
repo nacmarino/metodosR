@@ -402,6 +402,26 @@ modelo4</code></pre>
 <pre class="r"><code>modelo4$deviance/modelo4$df.residual</code></pre>
 <pre><code>## [1] 0.254727</code></pre>
 </div>
+<div id="glm-r2" class="section level2">
+<h2>GLM | r<sup>2</sup></h2>
+<pre class="r"><code>library(MuMIn)
+r.squaredLR(modelo1)</code></pre>
+<pre><code>## [1] 0.9057127
+## attr(,&quot;adj.r.squared&quot;)
+## [1] 1.872208</code></pre>
+<pre class="r"><code>r.squaredLR(modelo2) # modelo com overdispersion</code></pre>
+<pre><code>## [1] 0.9998565
+## attr(,&quot;adj.r.squared&quot;)
+## [1] 0.9998568</code></pre>
+<pre class="r"><code>r.squaredLR(modelo3)</code></pre>
+<pre><code>## [1] 0.8477816
+## attr(,&quot;adj.r.squared&quot;)
+## [1] 0.8511671</code></pre>
+<pre class="r"><code>r.squaredLR(modelo4)</code></pre>
+<pre><code>## [1] 0.4834444
+## attr(,&quot;adj.r.squared&quot;)
+## [1] 0.49129</code></pre>
+</div>
 <div id="consideracoes-finais" class="section level2">
 <h2>Considerações finais</h2>
 <ul>
