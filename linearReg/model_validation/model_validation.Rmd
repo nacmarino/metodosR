@@ -260,7 +260,10 @@ influencePlot(modelo1)
 
 ## Considerações finais  
 
-* Você pode conseguir os principais plots de diagnóstico e validação de modelos diretamente usando `plot(nome_do_modelo)`.   
+* Você pode conseguir os principais plots de diagnóstico e validação de modelos diretamente usando `plot(nome_do_modelo)`:
+    + `plot(resid(modelo1) ~ fitted(modelo1))`
+    + `qqplot(resid(modelo1));qqline(resid(modelo1))`
+    + `plot(resid(modelo1) ~ hatvalues(modelo1))`
   
 * O melhor modelo não é somente aquele que se ajusta melhor aos seus dados, mas aquele que também consegui reproduzir os padrões apresentados pelos dados.  
   

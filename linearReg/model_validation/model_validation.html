@@ -458,7 +458,12 @@ influencePlot(modelo1)</code></pre>
 <div id="consideracoes-finais" class="section level2">
 <h2>Considerações finais</h2>
 <ul>
-<li><p>Você pode conseguir os principais plots de diagnóstico e validação de modelos diretamente usando <code>plot(nome_do_modelo)</code>.</p></li>
+<li>Você pode conseguir os principais plots de diagnóstico e validação de modelos diretamente usando <code>plot(nome_do_modelo)</code>:
+<ul>
+<li><code>plot(resid(modelo1) ~ fitted(modelo1))</code></li>
+<li><code>qqplot(resid(modelo1));qqline(resid(modelo1))</code></li>
+<li><code>plot(resid(modelo1) ~ hatvalues(modelo1))</code></li>
+</ul></li>
 <li><p>O melhor modelo não é somente aquele que se ajusta melhor aos seus dados, mas aquele que também consegui reproduzir os padrões apresentados pelos dados.</p></li>
 <li><p>O diagnóstico e validação de modelos é parte mandatória da análise de dados.</p></li>
 <li><p>Este processo deve ser conduzido ao mesmo tempo do processo de seleção de modelos: cada modelo criado deve ser diagnosticado e validado antes de ir para a seleção.</p></li>
