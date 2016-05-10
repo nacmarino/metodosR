@@ -202,7 +202,7 @@ medify <- function(mu, x){
        xlab = "Riqueza de Espécies (log)")
   lines(c(mu, mu), c(0, 25), col="black", lwd=5)
   mse <- mean((x - mu)^2)
-  text(0.8, 20, paste("mu = ", mu))
+  text(0.8, 20, paste("mu = ", round(mu, 2)))
   text(0.8, 18, paste("MSE = ", round(mse, 2)))
 }
 
