@@ -1,5 +1,5 @@
 ---
-title       : "Modelos Lineares Mistos"
+title       : "Modelos Mistos"
 subtitle    : "Análise de dados com modelos lineares em R"
 author      : "Nicholas A. C. Marino"
 job         : "Universidade Federal do Rio de Janeiro"
@@ -10,7 +10,7 @@ output:
     smaller: true
 ---
 
-## Modelos lineares mistos  
+## Modelos mistos  
   
 * Por vezes nosso desenho experimental incorpora elementos que devemos considerar nos modelos:
     + Blocos espaciais e/ou temporais  
@@ -19,12 +19,12 @@ output:
     + Auto-correlação espacial ou temporal    
     + Variância não homogênea entre grupos  
     
-* Para tanto, utilizamos modelos mistos, que incoporam as variáveis preditoras fixas (do nosso interesse) e também as variáveis preditoras aleatórias (não são de nosso interesse) - por isso são chamado de _modelos mistos_.  
+* Para tanto, utilizamos modelos mistos, que incoporam as variáveis preditoras fixas (do nosso interesse) e também as variáveis preditoras aleatórias (no geral, não são de nosso interesse) - por isso são chamado de _modelos mistos_.  
 
-## Modelos lineares mistos  
+## Modelos mistos  
 
 * Podemos incorporar uma variável aleatória como um:
-    + Intercepto: os níveis do fator modificam os valores médios da variável resposta (ponto de partida da regressão difere, slopes podem ser semelhantes)  
+    + Intercepto: os níveis do fator modificam os valores médios da variável resposta (intercepto da regressão difere, slopes podem ser semelhantes)  
     + Slope: os níveis do fator modificam a relação da variável resposta com as variáveis preditoras (slopes podem variar de acordo com os níveis)  
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.width=3.5, fig.height=3.5}
@@ -38,7 +38,7 @@ ggplot(data = ilhas, mapping = aes(x = log10(area), y = log10(riqueza))) +
   ylab("")
 ```
 
-## Modelos lineares mistos | Intercepto 
+## Modelos mistos | Intercepto aleatório
 
 * Por exemplo, um modelo linear somente com várias fixas:  
 
@@ -48,7 +48,7 @@ ggplot(data = ilhas, mapping = aes(x = log10(area), y = log10(riqueza))) +
 
 <center> _y_ = ($\beta$~0~ + **$\omega$~i~**) + $\beta$~1~ * _x~1~_ + ($\epsilon$ + **$\epsilon$~i~**) </center>
 
-## Modelos lineares mistos | Slope
+## Modelos mistos | Slope aleatório
 
 * Por exemplo, um modelo linear somente com várias fixas:  
 
@@ -70,9 +70,9 @@ ggplot(data = ilhas, mapping = aes(x = log10(area), y = log10(riqueza))) +
 
 * Como consequência, normalmente utilizamos ML para fazer a seleção de modelos e o REML para validar o modelo e determinar a estimativa final dos parâmetros.  
 
-## Modelos lineares mistos
+## Modelos mistos
 
-* No R, modelos lineares mistos são implementados através dos pacotes `nlme` e `lme4`:
+* No R, modelos mistos são implementados através dos pacotes `nlme` e `lme4`:
     + `nlme::lme`: modelos lineares mistos, com boas funcionalidades para inclusão de estruturas de autocorrelação e de diferenças na variância entre grupos (`correlation` e `weights`)  
     
     + `lme4::lmer`: modelos lineares mistos (distribuição normal)  
@@ -90,10 +90,10 @@ ggplot(data = ilhas, mapping = aes(x = log10(area), y = log10(riqueza))) +
 ```{r warning=FALSE, message=FALSE}
 ilhas <- read.table(file = "../model_selection/dados/ilhas.txt", header = TRUE)
 library(lme4)
-modelo1 <- lmer(log10(riqueza) ~ log10(area) + arquipelago + (1|ilha), data = ilhas)
+modelo1 <- lmer(log10(riqueza) ~ arquipelago + log10(area) + (1|ilha), data = ilhas)
 ```
   
-* No `nlme`, usaríamos: `lme(log10(riqueza) ~ log10(area) + arquipelago, random = ~ 1|ilha, data = ilhas)`
+* No `nlme` usaríamos: `lme(log10(riqueza) ~ log10(area) + arquipelago, random = ~ 1|ilha, data = ilhas)`
 
 ## Modelos lineares mistos
 
@@ -101,17 +101,104 @@ modelo1 <- lmer(log10(riqueza) ~ log10(area) + arquipelago + (1|ilha), data = il
 summary(modelo1)
 ```
 
-## Modelos lineares mistos | Seleção de Modelos
+## Modelos lineares mistos | Seleção e Diagnóstico de Modelos
+  
+* A seleção e o diagnóstico dos modelos seguem as mesmas recomendações apresentadas anteriormente;  
+* Você também pode calcular o valor de r^2^ com os modelos mistos.  
+    + r^2^ marginal (**R2m**): somente as variáveis fixas
+    + r^2^ condicional (**R2c**): variáveis fixas + variáveis aleatórias
 
-MuMIn:: r squared
-Funcionalidades do lmerTest
+```{r warning=FALSE, message=FALSE}
+library(MuMIn)
+r.squaredGLMM(modelo1)
+```
 
-## Modelos lineares mistos | Diagnóstico do Modelo
+## Modelos lineares mistos | Seleção e Diagnóstico de Modelos
+  
+* Você pode comparar os modelos com e sem as variáveis aleatórias?
+    + Poder você pode, mas não deveria (afinal, isso não faz parte do seu desenho experimental?)
+    + Testes de verossimilhança entre modelos mistos e os modelos normais não são comparáveis
+* O pacote `lmerTest` implementa algumas funcionalidades para trabalhar LMMs.  
+    + `step`: seleção de modelos.  
+    + `rand`: testes de verossimilhança para as variáveis aleatórias.  
+    + `difflsmeans`: pós-teste.  
+
+## Modelos lineares mistos
+
+* Vamos olhar o modelo com calma: o pacote `broom`, função `tidy`.  
+* Podemos ver que a inclusão do intercepto aleatório adiciona dois parâmetros extras:  
+    + o intercepto para o tipo de ilha  
+    + um valor de resíduo (erro) para cada observação em cada tipo de ilha  
+* Note, no entanto, que não existe estimativa de erro e nem uma estatística para estes dois parâmetros - __qual a consequência?__  
+
+```{r}
+broom::tidy(modelo1)
+```
 
 ## Modelos lineares mistos | Significância dos Termos no Modelo
 
-Não usar car::Anova
+* Calcular os valores de significância dos termos em modelos lineares mistos não é fácil;  
+* Erro dos termos no modelo, principalmente os aleatórios, pode não ser tão fáceis de estimar;  
+* Graus de liberdade do modelo não são exatos;  
+* Como consequência:  
+    + Não podemos calcular valores de significância para os termos do modelo;
+    + Precisamos aproximar os valores dos graus de liberdade para conseguirmos realizar os cálculos.  
+
+```{r warning=FALSE, message=FALSE}
+library(car) 
+Anova(modelo1, type = "II", test.statistic = "F") # certo?
+```
 
 ## Modelos lineares mistos | Significância dos Termos no Modelo
 
-Usar lmerTest::anova
+* O criador do pacote `lme4` faz algumas sugestões (do pior para o melhor): [http://glmm.wikidot.com/faq]
+    1. Wald chi-square testes (car::Anova)  
+    2. Likelihood ratio test (via anova ou drop1)  
+    3. Conditional F-tests  
+    4. Para LMMs apenas, conditional F-tests com correção para os graus de liberdade (Kenward-Roger ou Satterthwaite)  
+    5. Testes de aleatorização  
+* Para a opção 4: `lmerTest::anova`  
+
+```{r}
+lmerTest::anova(object = modelo1, type = 2, ddf = "Satterthwaite")
+```
+
+## Modelos generalizados lineares mistos | Panorama geral  
+
+* Os modelos mistos também possuem uma versão para incoporar outras distribuições estatísticas no seu modelo: GLMMs.  
+  
+* Teoria ainda em desenvolvimento e não são tão estáveis, ainda (`mas veja a opção do pacote `glmmADMB`).  
+  
+* De toda forma, você pode implementar ele - e todas as recomendações para os outros modelos também valem aqui.  
+  
+* Para calcular a __overdispersion__ existe uma função, fornecida pelo próprio criador do pacote `lme4`.  
+
+```{r}
+source("../../R functions/overdisp.R")
+```
+
+## Modelos generalizados lineares mistos | Panorama geral  
+
+```{r warning=FALSE, message=FALSE}
+modelo2 <- glmer(mamiferos ~ arquipelago + log10(area) + (1|ilha), data = ilhas, family = poisson())
+r.squaredGLMM(modelo2)
+overdisp_fun(modelo2)
+```
+
+## Modelos generalizados lineares mistos | Panorama geral  
+
+```{r}
+summary(modelo2)
+```
+
+## Considerações finais  
+
+* Modelos mistos te permitem incorporar algumas especificidades do seu desenho experimental/amostral no modelo - inclusive algumas que envolvem a violação de pressupostos estatísticos.  
+  
+* As mesmas recomendações que valem para a seleção e diagnóstico de modelos para `lm` e `glm` valem para os modelos mistos (`nlme`, `lmer` e `glmer`).  
+  
+* Tanto o `lme` quanto o `lmer` implementam modelos lineares mistos, mas a forma como fazem isso difere um pouco - qual usar?  
+    + O que se adequar melhor ao seu desenho experimental/amostral  
+    + Lembrando que o `lme` permite a incoporação de diferenças na variância entre os níveis de fatores e de autocorrelação  
+  
+* O `lme4` também implementa as GLMMs (`glmer`), seguindo a mesma lógica das GLMs - mas cuidado ao usar estes modelos, pois eles combinam a complexidade das GLMs com as dos modelos mistos (e ainda estão em fase de desenvolvimento).    
