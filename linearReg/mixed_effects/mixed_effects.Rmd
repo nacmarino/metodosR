@@ -167,7 +167,7 @@ lmerTest::anova(object = modelo1, type = 2, ddf = "Satterthwaite")
 
 * Os modelos mistos também possuem uma versão para incoporar outras distribuições estatísticas no seu modelo: GLMMs.  
   
-* Teoria ainda em desenvolvimento e não são tão estáveis, ainda (`mas veja a opção do pacote `glmmADMB`).  
+* Teoria ainda em desenvolvimento e não são tão estáveis, ainda (mas veja a opção do pacote `glmmADMB`).  
   
 * De toda forma, você pode implementar ele - e todas as recomendações para os outros modelos também valem aqui.  
   
