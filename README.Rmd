@@ -1,6 +1,6 @@
-# Métodos Quantitativos para a Ecologia em R
+# Delineamento e Estatística
 
-Este é um repositório com o conteúdo do curso de Métodos Quantitativos para a Ecologia em R, oferecido por Nicholas dos A. C. Marino, para os alunos do Programa de Pós-Graduação em Ecologia, da Universidade Federal do Rio de Janeiro.  
+Este é um repositório com parte do material do curso de Delineamento e Estatística. Este curso é oferecido pelos Prof. Dr. Eduardo Arcoverde, Prof. Dr. Paulo Paiva, Prof. Dr. Marcus Vinicius Vieira e Dr. Nicholas Marino, para os alunos do Programa de Pós-Graduação em Ecologia, da Universidade Federal do Rio de Janeiro.  
 
 ### Licença de Uso  
 
