@@ -1,0 +1,60 @@
+---
+title       : "Tipos de Modelo"
+subtitle    : "Delineamento e Estatística"
+author      : "Nicholas A. C. Marino"
+job         : "Universidade Federal do Rio de Janeiro"
+date        : "github.com/nacmarino/metodosR"
+output:
+  html_document:
+    widescreen: true
+---
+
+## Modelos fixos _vs_ Modelos aleatórios _vs_ Modelos mistos
+
+* Em um fixed-effects model, nós assumimos que:
+    + Todos os estudos pertencem a uma mesma população e estão medindo a mesma coisa.  
+    + A variabilidade existente é explicada unicamente por erro na amostragem em cada estudo;  
+    + Varibilidade causada por diferenças entre estudos é ínfima ou inexistente.  
+* Exemplo de fixed-effects model:  
+<center>$\mu$ = T~i~ + $\epsilon$~i~\center
+
+## Fixed-effects model
+
+* A incerteza na estimativa de cada estudo está contida dentro da variabilidade do efeito comum que estes estão medindo.  
+* Generalizações são restritas aos estudos incluídos na meta-análise.  
+
+<p align="center">
+<img src="figs/fixed_effects_variance.png" height="300px"></img>
+</p>
+
+## Random-effects model
+
+* Usado para estimar a natureza de um efeito;
+* Baseado no pressuposto de normalidade;
+* Em um random-effects model:
+    + Estudos pertencem a diferentes subpopulações que compõem uma população maior: cada estudo está estimando o verdadeiro efeito em sua subpopulação.  
+    + A variabilidade existente é explicada por erro na amostragem em cada estudo e por diferenças entre estudos.  
+* Em um random-effects model, temos dois componenetes de variância:
+    + Variância dentro dos estudos: $\epsilon$~i~ (__within-study variance__)
+    + Variância entre os estudos: $\tau^2_i$ (__between-study variance__)
+* Você é capaz de explorar onde existe maior variância nos resultados: dentro ou entre estudos - em outras palavras: _consistência_ ou _contingência_.  
+
+## Random-effects model
+
+* Em um random-effects model:  
+<center>T~i~ = $\theta_i$ + $\epsilon$~i~ (efeito real em cada estudo) \center  
+
+<center>$\mu$ = T~i~ + $\tau^2_i$ (efeito combinado real) \center  
+
+* O efeito comum que os estudos estão medindo contém a variabilidade entre estudos e também dentro de cada estudo.
+* Generalizações podem ser feitas aos estudos incluídos na meta-análise e também aqueles que são deconhecidos.  
+
+<p align="center">
+<img src="figs/random_effects.png" height="300px"></img>
+</p>
+
+## Mixed-effects models
+
+* É utilizado quando queremos não só estimar um efeito, mas também explorar a heterogeneidade ao redor dele;  
+* Acomoda uma fração aleatória da heterogeneidade (random-effects) - causada por variância entre- e dentro- dos estudos -, assim como uma fração fixa (característica dos estudos que queremos explorar);  
+* Neste sentido, ao invés de 'jogar' toda a heterogeneidade entre estudos para um termo de variância, parte dela é atribuída a _moderadores_ (veremos mais sobre isso na próxima aula);

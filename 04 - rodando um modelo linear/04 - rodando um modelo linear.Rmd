@@ -1,0 +1,12 @@
+---
+title       : "Rodando um modelo linear"
+subtitle    : "Delineamento e Estatística"
+author      : "Nicholas A. C. Marino"
+job         : "Universidade Federal do Rio de Janeiro"
+date        : "github.com/nacmarino/metodosR"
+output:
+  html_document:
+    widescreen: true
+---
+
+## Como rodar uma LMM e uma GLM
