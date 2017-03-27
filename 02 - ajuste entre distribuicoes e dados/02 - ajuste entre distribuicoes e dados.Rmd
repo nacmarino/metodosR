@@ -39,4 +39,47 @@ shapiro.test(x = dados)
 ```
 
 * Mas e quanto às outras famílias de distribuição de probabilidade?
+* O pacote `fitdistrplus` oferece alguns métodos para determinamos a distribuição mais adequada para um conjunto de dados cuja natureza da distribuição de probabilidade não é conhecida.
+* A função `fitdist` ajusta uma distribuição a um conjunto de dados e estima os parâmetros daquela distribuição.
 
+```{r message=FALSE}
+library(fitdistrplus)
+ajuste1 <- fitdist(data = dados, distr = "norm")
+coef(ajuste1)
+# compare:
+mean(dados) # media do vetor 'dados'
+sd(dados) # desvio padrão do 'dados'
+# e compara com o resultado de um modelo linear:
+summary(lm(dados ~ 1))
+```
+
+> A função `fitdist` usa um estimador por verossimilhança máxima para determinar o valor mais provável para cada um dos parâmetros da distribuição de probabilidade - valor do parâmetro que minimiza a soma dos quadrados de um conjunto de dados.
+
+* Podemos usar a função `fitdist` para ajustar outras famílias de distribuição de probabilidade.  
+
+```{r message=FALSE}
+coef(fitdist(data = dados, distr = "norm"))
+coef(fitdist(data = dados, distr = "pois"))
+coef(fitdist(data = dados, distr = "gamma"))
+coef(fitdist(data = dados, distr = "weibull"))
+coef(fitdist(data = dados, distr = "lnorm"))
+```
+
+* E a função
+
+* Este pacote possui quatro funções muito úteis para entender e determinar o tipo de família de distribuição de probabilidade que melhor se ajusta a um conjunto de dados:
+    + `fitdist`: ajusta uma distribuição a um conjunto de dados e estima os parâmetros daquela distribuição;
+    + `gofstat`: computa um teste para determinar o ajuste dos dados a uma ou mais famílias de distribuição de probabilidade;
+    + `cdfcomp`: método gráfico que compara o ajuste dos dados a uma ou mais famílias de distribuição de probabilidade baseado na função de distribuição cumulativa da probabilidade (probabilidade de obter um valor _x_ maior ou igual a um dado valor _X_ determinado).
+    + `descdist`: método gráfico que descreve os parâmetros gerais da distribuição de um conjunto de dados, bem como uma estimativa da kurtose e obliquidade dos dados (_skewness_) - conhecido como Gráfico de Cullen e Frey.
+
+<center><img src="figs/kurtosis.png" height="260px"></img></center>     
+
+```{r message=FALSE}
+library(fitdistrplus)
+teste1 <- fitdist(dados, distr = "norm")
+teste2 <- fitdist(dados, distr = "pois")
+gofstat(list(teste1, teste2))
+cdfcomp(list(teste1, teste2))
+descdist(data = dados)
+```
