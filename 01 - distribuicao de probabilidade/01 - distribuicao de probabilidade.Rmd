@@ -1,0 +1,132 @@
+---
+title       : "Famílias de Distribuições de Probabilidade"
+subtitle    : "Delineamento e Estatística"
+author      : "Nicholas A. C. Marino"
+job         : "Universidade Federal do Rio de Janeiro"
+date        : "github.com/nacmarino/metodosR"
+output:
+  html_document:
+    widescreen: true
+---
+
+## Distribuições de Probabilidade
+
+* A distribuição de probabilidade de uma variável _X_ descreve de que forma a probabilidade de obter um dado valor _x_ está distribuída entre todas as possibilidades existentes em _X_.  
+* As distribuições de probabilidade são baseadas em diferentes tipos de famílias de distribuição de probabilidade:
+    + Gaussiana (Normal);
+    + Binomial;
+    + Poisson;
+    + Gamma;
+    + Beta;
+    + Binomial Negativa;
+    + Uniforme;
+    + ...
+* Cada família de distribuição de probabilidade possui características específicas que justificam e limitam o seu uso.
+
+## Gerando números aleatórios de acordo com diferentes famílias de distribuição de probabilidade
+
+* Você pode gerar número aleatórios a partir da maioria das famílias de distribuição de probabilidade utilizando a linguagem R;
+* Toda função que gera número aleatórios na linguagem R é iniciada pela letra `r` (_random_):
+    + `rnorm`: para variáveis aleatórias que seguem a distribuição __Gaussiana/Normal__;
+    + `rbinom`: para variáveis aleatórias que seguem a distribuição __Binomial__;
+    + `rpois`: para variáveis aleatórias que seguem a distribuição __Poisson__;
+    + `rnbinom`: para variáveis aleatórias que seguem a distribuição __Binomial Negativa__;
+    + `runif`: para variáveis aleatórias que seguem a distribuição __Uniforme__;
+    + `rgamma()`: para variáveis aleatórias que seguem a distribuição __Gamma__;
+    + ...
+* Um exemplo com a distribuição Normal:  
+  
+```{r}
+options(digits = 3)
+set.seed(33)
+rnorm(n = 100, mean = 10, sd = 1)
+```
+
+* Podemos criar um histograma para visualizar a distribuição de probabilidade de obtermos cada um dos valores observados acima.
+
+```{r fig.align='center'}
+set.seed(33)
+hist(x = rnorm(n = 100, mean = 10, sd = 1), main = "Distribuição Normal", xlab = "Valores observados", ylab = "Frequência", freq = FALSE)
+```
+
+* O que acontece se modificarmos os valores fornecidos à função?
+
+```{r eval=FALSE}
+library(manipulate)
+set.seed(33)
+manipulate(
+  hist(x = rnorm(n = tamanho, mean = media, sd = desvio), main = "Distribuição Normal", 
+       xlab = "Valores observados", ylab = "Frequência", freq = FALSE), 
+           tamanho = slider(10, 1000, step = 50),
+           media = slider(0, 100, step = 0.5), 
+           desvio = slider(1, 6, step = 0.5))
+```
+
+> A probabilidade de obtermos um valor _x_ a partir de uma população _X_ muda de acordo com o tamanho da amostra, o valor estimado da média e o erro associado à essa estimativa.
+
+* O que acontece agora se tentarmos usar outra família de distribuição de probabilidade?
+
+```{r eval=FALSE}
+rpois(n = 100, mean = 10, sd = 1)
+```
+
+* A distribuição de Poisson não é descrita por uma _média_ e um _desvio padrão_, mas sim por um parâmetro chamado _lambda_, que representa tanto a sua média quanto o erro ao redor desta média. De forma similar, a distribuição binomial é descrita pelo número de tentativas (_n_) e a probabilidade de sucesso em cada uma delas (_p_), e assim sucessivamente para cada família distribuição de probabilidade.
+
+```{r eval=FALSE}
+set.seed(33)
+manipulate(
+  hist(x = rpois(n = tamanho, lambda = estimativa), main = "Distribuição de Poisson", 
+       xlab = "Valores observados", ylab = "Frequência", freq = FALSE), 
+           tamanho = slider(10, 50, step = 5),
+           estimativa = slider(1, 50, step = 1))
+```    
+    
+> Cada família de distribuição de probabilidade é descrita por um conjunto diferente de parâmetros, que também descrevem aspectos diferentes de cada uma destas distribuições.  
+
+
+* Algumas famílias de distribuição de probabilidade trabalham com valores __discretos__ e outras com valores __contínuos__.
+
+```{r}
+set.seed(33)
+rnorm(n = 100, mean = 10, sd = 1)
+set.seed(33)
+rpois(n = 100, lambda = 10)
+set.seed(33)
+rbinom(n = 100, size = 10, prob = 0.3)
+set.seed(33)
+rgamma(n = 100, shape = 10, scale = 2)
+```
+
+* De forma similar, algumas famílias de distribuição de probabilidade podem trabalham com valores entre __-$\infty$ e +$\infty$__, enquanto outras trabalham com valores entre __0 e +$\infty$__ ou ainda com valores __>0 e +$\infty$__.
+
+```{r}
+set.seed(33)
+rnorm(n = 100, mean = -10, sd = 100)
+set.seed(33)
+rpois(n = 100, lambda = -10)
+options(digits = 3)
+set.seed(33)
+rgamma(n = 100, shape = 1, scale = 3)
+```
+
+* Por fim, o aumento do número de observações aproxima a distribuição de probabilidade de diversas famílias àquelas esperada para a distribuição Normal.
+
+```{r eval=FALSE}
+set.seed(33)
+manipulate(
+  hist(x = rpois(n = tamanho, lambda = estimativa), main = "Distribuição de Poisson", 
+       xlab = "Valores observados", ylab = "Frequência", freq = FALSE), 
+           tamanho = slider(10, 10000, step = 50),
+           estimativa = slider(20, 50, step = 5))
+set.seed(33)
+manipulate(
+  hist(x = rbinom(n = tamanho, size = 20, prob = 0.25), main = "Distribuição Binomial", 
+       xlab = "Valores observados", ylab = "Frequência", freq = FALSE), 
+           tamanho = slider(10, 1000, step = 50))
+```
+
+* A escolha da família de distribuição de probabilidade a ser usada para descrever um conjunto de dados nem sempre é intuitiva: __parte ciência, parte arte__!
+    + Qual a natureza do dado que você está usando?
+    + Qual a natureza do modelo/processo que você está estudando?
+    + Seu objetivo são os números (_quanto_, _quando_, _onde_) ou a compreensão de um padrão (_como_ e _por que_)? 
+
