@@ -9,6 +9,15 @@ output:
     widescreen: true
 ---
 
+## Para que nós utilizamos os modelos de regressão?
+
+1. Objetivo geral deles
+2. O que eles estão estimando (lm)
+3. Como isso se aproxima da média
+4. Como usar o fitdist para mostrar isso
+5. Vale para normal, mas e as outras distribuições?
+6. Overdispersion
+
 ## Que tipo de distribuição de probabilidade meus dados seguem?
 
 * Na maior parte das vezes não temos a menor noção de que tipo de família de distribuição de probabilidade nossos dados seguem.
