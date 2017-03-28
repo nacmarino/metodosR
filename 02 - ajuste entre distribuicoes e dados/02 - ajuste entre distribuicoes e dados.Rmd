@@ -11,6 +11,18 @@ output:
 
 ## Para que nós utilizamos os modelos de regressão?
 
+* Um modelo de regressão visa determinar a relação entre uma ou mais variáveis resposta (_y~1~_, _y~2~_, _y~3~_,..., _y~i~_) e preditoras (_x~1~_, _x~2~_, _x~3~_,..., _x~i~_).
+* Esta relação é descrita através de um modelo que tenta predizer o valor de _$\bar{y}$_ a partir de ($\beta$~0~)
+
+<center><img src="figs/regressao_exemplo.jpeg" height="260px"></img></center>    
+
+```{r}
+set.seed(33)
+dados <- round(rnorm(n = 50, mean = 100, sd = 30), digits = 0)
+dados
+summary(lm(dados ~ 1))
+```
+
 1. Objetivo geral deles
 2. O que eles estão estimando (lm)
 3. Como isso se aproxima da média
