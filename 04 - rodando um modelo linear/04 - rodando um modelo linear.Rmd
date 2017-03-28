@@ -9,4 +9,183 @@ output:
     widescreen: true
 ---
 
-## Como rodar uma LMM e uma GLM
+## Modelos lineares
+
+* Rodar um modelo é parte ciência, parte arte:  
+    + O modelo segue sua pergunta e/ou desenho experimental;
+    + Não existe o modelo certo, mas sim o que se adequa aos seus dados;
+    + Você não vai ter apenas um modelo para trabalhar, mas vários modelos possíveis (eu normalmente rodo > 30 modelos para cada variável resposta nos meus trabalhos);
+    + Achar o modelo adequado vem primeiro, a significância (estatística) do que está dentro dele vem depois.  
+    
+## Passo-a-passo (minha fórmula)  
+
+> 1. Saber o que quero fazer;  
+> 2. Visualizar os dados e relação entre eles;
+> 3. Descobrir o tipo de distribuição da minha variável resposta;
+> 4. Estabelecer um modelo nulo;  
+> 5. Criar um modelo:  
+    + adicionando uma variável de interesse por vez; ou,  
+    + com todas as variáveis de interesse de uma vez.  
+> 6. Comparar com o modelo nulo;  
+> 7. Adicionar/remover variáveis do modelo;  
+> 8. Comparar os novo(s) modelo(s);  
+> 9. Determinar o modelo mais provável;
+> 10. Validar modelo final;
+> 11. Testar significância dos termos no modelo;  
+> 12. Fazer pós-testes, se necessário.
+
+### Não confudir normalidade dos dados _vs_ normalidade dos resíduos!
+
+* General Linear Models: distribuição dos resíduos do modelo segue a distribuição de probabilidade normal (`lm`, `glm::gaussian`).  
+* General__ized__ Linear Models: distribuição dos resíduos do modelo não segue a distribuição de probabilidade normal (`glm`).  
+
+## Um exemplo ilustrativo de um modelo linear generalizado
+
+* A relação espécie-área (Arrhenius, 1921, J Ecol 9: 95-99) é uma das relações mais conhecidas e exploradas da ecologia. 
+* O estudo de Biogeografia de Ilhas, por MacArthur & Wilson (1967), foi uma grande contribuição para entendermos a dinâmica ecológica nestes habitats.  
+* Podemos usar essas informações como um ponto de partida para direcionar nossas análises:  
+      1. A riqueza de espécies em uma ilha aumenta como a sua área (log-log).    
+      2. A riqueza de espécies em uma ilha aumenta com a quantidade de energia disponível.  
+      3. A riqueza de espécies em uma ilha aumenta com a diversidade de habitats.  
+      4. Ilhas oceânicas possuem menor riqueza de espécies do que ilhas costeiras de mesmo tamanho.
+      5. Ilhas em arquipelagos maiores devem ter mais espécies que em arquipelagos menores.  
+      
+```{r}
+ilhas <- read.table(file = "dados/ilhas.txt", header = TRUE)
+head(ilhas)
+```
+
+* Vamos utilizar a função `glm` para explorar a relação entre o número de espécies em cada ilha (variável resposta) e as características de cada uma das ilhas (variáveis preditoras).
+* A função `glm` é composta pelos seguintes argumentos:
+
+```{r}
+args(glm)
+```
+
+* Podemos construir modelos de acordo com nossas hipóteses OU realizar uma seleção de modelos (faremos este último para a finalidade desta aula).
+* O pacote `MuMin` possui um conjunto de funções muito úteis para realizarmos este processo, sendo a função `MuMin::drege` uma destas.
+    + A primeira etapa é construir um modelo com todas as variáveis que queremos incluir e testar no processo de seleção de modelos;
+    + A partir deste modelo global, o processo de seleção de modelos é realizado pela função `MuMin::drege`.
+    + Existe a possibilidade 'forçar' a presença de determinadas variáveis em todos os modelos através do argumento `fixed`
+
+```{r message=FALSE}
+library(MuMIn)
+options(na.action = na.fail) # necessário para que a função funcione - previne que os modelos sejam ajustados a conjuntos de dados diferentes
+modelo <- glm(formula = log(riqueza) ~ arquipelago + log(area) + produtividade + populacao + habitat + montanha + temperatura + precipitacao,
+              family = gaussian(), data = ilhas)
+args(dredge)
+selecao <- dredge(modelo)
+selecao
+```
+
+* Um modelo contendo o tipo de arquipélago, a quantidade de habitats na ilha e sua área parece descrever suficientemente bem a variação na riqueza de espécies no conjunto de dados amostrados.
+
+```{r}
+modelo <- glm(formula = log(riqueza) ~ arquipelago + log(area) + habitat, family = gaussian(), data = ilhas)
+summary(modelo)
+```
+
+### Mas será que o modelo é adequado?
+
+* É necessário validar o modelo final: processo para verificar a adequação do modelo aos dados, além da conformidade com pressupostos estatísticos e identificação de observações tendenciosas
+    + Normalidade dos resíduos;
+    + Homocedasticidade dos resíduos;
+    + Observações muito influentes;
+    + Capacidade preditiva do modelo;
+    + ...
+* Grosso modo: é o processo através do qual testamos se o resultado que encontramos pode ser de fato real ou apenas um artefato.
+* Alguns exemplos:
+
+```{r fig.align='center'}
+par(mfrow = c(2,2))
+hist(resid(modelo), xlab = "Valores dos resíduos", ylab = "Frequência", main = "Distribuição dos Resíduos")
+qqnorm(resid(modelo), main = "QQ-Plot", xlab = "Quartis Teóricos", ylab = "Quartis da Amostra");qqline(resid(modelo))
+plot(fitted(modelo) ~ log(riqueza), data = ilhas, xlab = "log Riqueza (Observado)", ylab = "log Riqueza (Predito)")
+plot(fitted(modelo) ~ arquipelago, data = ilhas, xlab = "Tamanho do arquipelago", ylab = "Valores preditos")
+```
+
+### Após determinar o modelo adequado é que devemos realizar pós-testes e testes de significância dos termos no modelo
+
+* Um exemplo de teste de significância dos termos do modelo:
+
+```{r}
+library(car)
+Anova(modelo, type = "II") # existem três formas principais de calcular a significância dos termos em um modelo
+```
+
+* Um exemplo de pós-teste: existe diferenças na riqueza de espécies de acordo com o tamanho do arquipélago?
+
+```{r}
+library(lsmeans)
+(teste1 <- lsmeans(object = modelo, "arquipelago"))
+contrast(teste1, method = "pairwise") 
+```
+
+### Uma observação: overdispersion, de novo
+
+* Relembrando _overdispersion_: a estimativa do erro de um parâmetro é __subestimada__ - a distribuição estatística prevê que a dispersão do conjunto de dados é menor do que o real.
+* A _Deviance_ seria uma medida do quanto os dados desviam do modelo implementado.
+* Podemos obter evidência de __overdispersion__ em um modelo de GLM através do cálculo entre a _Deviance_ do modelo e o número de graus de liberdade dos resíduos.
+* Se o valor de desta razão for maior do que 1, então existe evidência de __overdispersion__ no modelo.  
+* Grosso modo: esta razão representa o quanto cada observação está contribuindo para o distanciamento entre os valores preditos pelo modelo e os valores observados.
+  
+<center> deviance/df.residual > 1  = overdispersion </center>  
+  
+```{r}
+modelo$deviance/modelo$df.residual
+```
+
+* Este valor também é apresentado no `summary` do modelo.
+
+```{r}
+summary(modelo)
+```
+
+## Um exemplo de modelo linear misto
+
+* Suponha que o efeito do tamanho do arquipélago não seja de nosso interesse na análise de dados, e que tenhamos amostrado um subconjunto de todos os tamanhos de arquipélago possível que exista.
+* Neste caso, utilizaremos um modelo muito similar ao que já rodamos, mas incluiremos o tamanho do arquipelago como um termo aleatorio no modelo.
+* Para os modelos gerados através das funções do pacote `lme4`, existem opções de funções que ajudam na seleção e validação de modelos no pacote `lmerTest`.
+* O pacote `lme4` possui muitas funcionalidades, mas algumas delas são _temperamentais_ (existe a alternativa do pacote `nlme`)
+
+```{r warning=FALSE, message=FALSE}
+library(lme4)
+library(lmerTest)
+ilhas$logarea <- log(ilhas$area)
+modelo <- lmer(formula = log(riqueza) ~ (1|arquipelago) + logarea + produtividade + populacao + habitat + montanha + temperatura + precipitacao,
+               data = ilhas)
+summary(modelo)
+```
+
+* Podemos realizar a seleção de modelos através da função `lmerTest::step` ou ainda através da função `MuMin::dredge`.
+
+```{r warning=FALSE}
+step(model = modelo, lsmeans.calc = FALSE, difflsmeans.calc = FALSE, alpha.random = 0.1, alpha.fixed = 0.05)
+```
+
+```{r warning=FALSE}
+dredge(modelo)
+```
+
+* O teste de significância dos termos do modelo deve ser feito com a função `lmerTest::Anova`.
+
+```{r}
+modelo <- lmer(formula = log(riqueza) ~ (1|arquipelago) + logarea + habitat, data = ilhas)
+Anova(modelo, type = 2)
+```
+
+## Considerações finais
+
+* Rodar um modelo é parte ciência, parte arte, e exige muito mais trabalho do que apenas as noções apresentadas aqui;
+* Existem muitos tipos e opções de modelos estatísticos:
+    + Modelos lineares: 
+        - `base::lm`, `base::glm`
+        - `nlme::lme`, `nlme::gls`
+        - `lme4::lmer`, `lme4::glmer`
+        - `gam::gam`  
+    + Modelos não-lineares: 
+        - `stats::nls`, `stats:loess`   
+        - `nlme::gnls`  
+        - `gnm::gnm`  
+        - `gam::gam`  
+* Não existe o melhor modelo ou a melhor distribuição para um conjunto de dados, mas sim aquele modelo ou distribuição que melhor se adequa à sua pergunta e objetivos.
