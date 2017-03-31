@@ -33,7 +33,6 @@ qqnorm(log(dados$riqueza));qqline(log(dados$riqueza))
 
 ## criação de modelos
 ### GLMs
-
 # estabelecendo um modelo nulo
 modelo_nulo <- glm(log(riqueza) ~ 1, dados, family = gaussian())
 summary(modelo_nulo)
@@ -63,19 +62,74 @@ AIC(modelo1, modelo2)
 
 # vamos observar os resultados detalhados do modelo
 summary(modelo4)
-
 # onde esta o efeito da ilha costeira?
-summary(glm(log(riqueza) ~ log(area) + populacao, dados, family = gaussian()))
+summary(glm(log(riqueza) ~ 0 + log(area) + ilha, dados, family = gaussian()))
 
 ### SELEÇÃO DE MODELOS, ESTILO BALA DE SAL
-options(na.action = na.fail())
+library(MuMIn)
+options(na.action = na.fail)
+modelo_cheio <- glm(log(riqueza) ~ ilha + arquipelago + log(area) + log(produtividade) +
+                      populacao + habitat + montanha + temperatura + precipitacao,
+                    data = dados, family = gaussian())
+summary(modelo_cheio)
+# tabela de selecao de modelos
+selecao <- dredge(global.model = modelo_cheio)
+head(selecao)
 
+# importancia das variaveis
+importance(x = selecao)
 
+# o que incluir?
+modelo_final <- glm(log(riqueza) ~ ilha + arquipelago + log(area), data = dados, family = gaussian())
+summary(modelo_final)
 
-### DEPOIS DO ALMOÇO:
-# 1. SELEÇÃO DE MODELOS
-# 2. vALIDAÇÃO DE MODELOS
-# 3. TESTES DE SIGNIFICANCIA
-# 4. POS-TESTE
-# 5. MODELOS MISTOS
+# teste de normalidade dos residuos
+vetor_residuos <- residuals(modelo_final)
+hist(vetor_residuos)
+qqnorm(vetor_residuos);qqline(vetor_residuos)
 
+plot(vetor_residuos ~ log(riqueza), data = dados)
+plot(predict(modelo_final) ~ log(riqueza), data = dados)
+
+## teste de significancia
+anova(modelo_final, test = "F")
+
+# anova com soma dos quadrados tipo 2 e/ou 3
+library(car)
+Anova(modelo_final, type = "II", test.statistic = "F")
+
+# pos testes
+summary(modelo_final)
+library(lsmeans)
+teste <- lsmeans(modelo_final, ~ilha + arquipelago)
+teste
+contrast(teste, "pairwise")
+
+# exemplo via distribuicao de poisson
+exemplo_pois <- glm(riqueza ~ area + ilha + arquipelago, data = dados, family = poisson())
+summary(exemplo_pois)
+
+### modelos mistos
+library(lme4) # ou nlme
+# LMM e GLMM
+
+# modelos-exemplo
+modelo6 <- lmer(log(riqueza) ~ log(area) + ilha + (1|arquipelago), data = dados, REML = FALSE)
+summary(modelo6)
+qqnorm(resid(modelo6));qqline(resid(modelo6))
+
+modelo7 <- lmer(log(riqueza) ~ (1|arquipelago), data = dados, REML = FALSE)
+summary(modelo7)
+
+# comparacao entre modelos
+anova(modelo6, modelo7)
+
+## teste de significancia
+library(lmerTest)
+lmerTest::anova(modelo6, type = 2)
+
+# GLMM
+## FIQUEM LONGE DISSO
+### PERIGO
+## FUJA
+glmer(riqueza ~ log(area) + ilha + (1|arquipelago), data = dados, family = poisson())
