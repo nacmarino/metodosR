@@ -1,0 +1,1 @@
+riacho	montante	jusanteriacho1	13	8riacho2	14	10riacho3	20	7riacho4	15	13riacho5	15	8riacho6	20	16riacho7	16	12riacho8	11	5riacho9	13	3riacho10	14	13
