@@ -386,7 +386,7 @@ riachos
 <center><img src="figures/tpareado.png" height="200px"></img></center>
 
 * O número de graus de liberdade utilizados para o teste de hipóteses é __n - 1__, onde _n_ é o número de pares independentes.
-* No R, podemos fazer um teste-t pareado utilizando o argumento `paired = TRUE` dentro da função `t.text`.
+* No R, podemos fazer um teste-t pareado utilizando o argumento `paired = TRUE` dentro da função `t.test`.
 
 ## Exemplo de teste-t pareado {.smaller}
 
@@ -427,7 +427,7 @@ ggplot() +
   geom_density(data = data.frame(v2), mapping = aes(x = v2, ..count..), colour = "black", fill = "purple2", alpha = 0.5) +
   geom_density(data = data.frame(v3), mapping = aes(x = v3, ..count..), colour = "black", fill = "firebrick2", alpha = 0.5) +
   scale_y_continuous(name = "Número de observações", expand = c(0, 0), limits = c(0, 15)) +
-  scale_x_continuous(name = "Amostras/Tratamentos", expand = c(0, 0)) +
+  scale_x_continuous(name = "Valores observados", expand = c(0, 0)) +
   theme_bw() + 
   theme(panel.grid = element_blank(),
         axis.text = element_blank(),
