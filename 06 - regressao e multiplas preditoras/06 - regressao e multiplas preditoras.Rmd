@@ -310,6 +310,7 @@ $$\beta'_{2y,1} = \frac{r_{2y} - r_{1y}~r_{12}}{(1 - r^2_{12})}$$
 * Podemos converter entre as duas formas através da fórmula:
 
 $$\beta_{jy,k} = \beta'_{jy,k}~\frac{S_y}{S_{xj}}$$
+
 ## Exemplo {.smaller}
 
 * O R considera o método #1:
@@ -449,7 +450,7 @@ $$SSAB = \sum_{i}\sum_{j}~(\bar{x_{ij}} - \bar{x_{i.}} - \bar{x_{.j}} + \bar{x_{
 ## Teste estatístico para a ANOVA n-way
 
 * Assim como fizemos para a ANOVA one-way, a ANOVA n-way utiliza como teste estatístico os valores de F para cada termo utilizado.  
-* Os valores de F são obtidos pela razão entre a Média dos Quadrados de cada termo e a Média dos Quadrados do Resíduo: F = $\frac{MSX}{MBE}$
+* Os valores de F são obtidos pela razão entre a Média dos Quadrados de cada termo e a Média dos Quadrados do Resíduo: F = $\frac{MSX}{MSE}$
 * Os graus de liberdade para o cálculo de cada Média dos Quadrados é:
     + A - 1 ou B -1 para cada efeito principal, , onde A e B representam o número de níveis dentro de cada fator analisado;
     + (A - 1)(B - 1) para a interação; 
